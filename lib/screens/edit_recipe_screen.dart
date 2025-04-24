@@ -63,6 +63,35 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     );
   }
 
+  void _confirmDeleteRecipe(String id) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar Exclusão'),
+          content: const Text(
+            'Tem certeza de que deseja excluir esta receita?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo
+              },
+            ),
+            TextButton(
+              child: const Text('Deletar'),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Fecha o diálogo
+                await repository.delete(id); // Chama a função de deletar
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _submitForm(bool isEdit) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
@@ -98,7 +127,12 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
 
       var snackBar = SnackBar(
         content: Text("Receita Salva."),
-        action: SnackBarAction(label: 'Confirmar', onPressed: () {}),
+        action: SnackBarAction(
+          label: 'Confirmar',
+          onPressed: () {
+            _confirmDeleteRecipe(recipe.id);
+          },
+        ),
       );
 
       final updatedRecipe = Recipe(
