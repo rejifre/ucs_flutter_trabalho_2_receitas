@@ -7,8 +7,7 @@ import 'edit_form_instruction_widget.dart';
 class EditFormInstructionListWidget extends StatefulWidget {
   final List<Instruction>? initialInstructions;
 
-  const EditFormInstructionListWidget({Key? key, this.initialInstructions})
-    : super(key: key);
+  const EditFormInstructionListWidget({super.key, this.initialInstructions});
 
   @override
   EditFormInstructionListWidgetState createState() =>

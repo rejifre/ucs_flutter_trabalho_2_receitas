@@ -5,7 +5,6 @@ import 'screens/home_screen.dart';
 import 'screens/recipe_detail_screen.dart';
 import 'screens/splash_screen.dart';
 import 'ui/app_theme.dart';
-import 'ui/recipe_screen_type.dart';
 
 void main() {
   runApp(const MyApp());

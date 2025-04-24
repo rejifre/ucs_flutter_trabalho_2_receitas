@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:logger/web.dart';
 import 'package:ucs_flutter_trabalho_2_receitas/repositories/recipe_repository.dart';
 import 'package:ucs_flutter_trabalho_2_receitas/ui/recipe_screen_type.dart';
-import 'package:uuid/uuid.dart';
 
 import '../models/edit_recipe_screen_arguments_model.dart';
-import '../models/ingredient_model.dart';
-import '../models/instruction_model.dart';
 import '../models/recipe_model.dart';
 import '../routes/routes.dart';
 import '../ui/app_colors.dart';
@@ -25,10 +21,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    loadRecipes();
+    _loadRecipes();
   }
 
-  void loadRecipes() async {
+  void _loadRecipes() async {
     var recipes = await repository.getAllRecipes();
     setState(() {
       _recipes = recipes;

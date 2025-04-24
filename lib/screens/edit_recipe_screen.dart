@@ -186,64 +186,66 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: InputDecoration(labelText: 'Nome'),
-                validator:
-                    (val) =>
-                        val == null || val.isEmpty
-                            ? 'Por favor preencha o nome.'
-                            : null,
-              ),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: InputDecoration(labelText: 'Descrição'),
-              ),
-              TextFormField(
-                controller: _scoreController,
-                decoration: InputDecoration(labelText: 'Nota de 0 a 5'),
-                keyboardType: TextInputType.number,
-                validator:
-                    (val) =>
-                        val == null || val.isEmpty
-                            ? 'Por favor preencha a nota.'
-                            : null,
-              ),
-              TextFormField(
-                controller: _preparationTimeController,
-                decoration: InputDecoration(labelText: 'Tempo de Preparo'),
-                validator:
-                    (val) =>
-                        val == null || val.isEmpty
-                            ? 'Por favor preencha o tempo de preparo.'
-                            : null,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15.0),
-                child: EditFormIngredientListWidget(
-                  key: _ingredientListKey,
-                  initialIngredients: [],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: [
+                TextFormField(
+                  controller: _titleController,
+                  decoration: InputDecoration(labelText: 'Nome'),
+                  validator:
+                      (val) =>
+                          val == null || val.isEmpty
+                              ? 'Por favor preencha o nome.'
+                              : null,
                 ),
-              ),
-              Divider(),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15.0),
-                child: EditFormInstructionListWidget(
-                  key: _instructionListKey,
-                  initialInstructions: [],
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(labelText: 'Descrição'),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: () => _submitForm,
-                child: const Text('Salvar Receita'),
-              ),
-            ],
+                TextFormField(
+                  controller: _scoreController,
+                  decoration: InputDecoration(labelText: 'Nota de 0 a 5'),
+                  keyboardType: TextInputType.number,
+                  validator:
+                      (val) =>
+                          val == null || val.isEmpty
+                              ? 'Por favor preencha a nota.'
+                              : null,
+                ),
+                TextFormField(
+                  controller: _preparationTimeController,
+                  decoration: InputDecoration(labelText: 'Tempo de Preparo'),
+                  validator:
+                      (val) =>
+                          val == null || val.isEmpty
+                              ? 'Por favor preencha o tempo de preparo.'
+                              : null,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  child: EditFormIngredientListWidget(
+                    key: _ingredientListKey,
+                    initialIngredients: [],
+                  ),
+                ),
+                Divider(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  child: EditFormInstructionListWidget(
+                    key: _instructionListKey,
+                    initialInstructions: [],
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => _submitForm,
+                  child: const Text('Salvar Receita'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -22,7 +22,7 @@ class Instruction {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
-      'stepOrder': stepOrder,
+      'step_order': stepOrder,
       'description': description,
     };
   }
@@ -30,7 +30,7 @@ class Instruction {
   factory Instruction.fromMap(Map<String, dynamic> map) {
     return Instruction(
       id: map['id'] as String,
-      stepOrder: map['stepOrder'] as int,
+      stepOrder: map['step_order'] as int,
       description: map['description'] as String,
     );
   }
@@ -42,7 +42,7 @@ class Instruction {
 
   @override
   String toString() =>
-      'Instruction(id: $id, stepOrder: $stepOrder, description: $description)';
+      'Instruction(id: $id, step_order: $stepOrder, description: $description)';
 
   @override
   bool operator ==(covariant Instruction other) {
