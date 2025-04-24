@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:ucs_flutter_trabalho_2_receitas/screens/widgets/recipe_details/ingredients_detail_widget.dart';
 import '../models/recipe_model.dart';
 import '../ui/app_colors.dart';
@@ -12,9 +11,7 @@ class RecipeDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final recipe = ModalRoute.of(context)!.settings.arguments as Recipe;
-    var logger = Logger();
-    logger.d(recipe.ingredients);
-    logger.d(recipe.steps);
+
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
