@@ -72,7 +72,7 @@ class HomeScreen extends StatelessWidget {
         onPressed:
             () => {Navigator.pushNamed(context, Routes.edit, arguments: {})},
         tooltip: 'Adicionar Receita',
-        backgroundColor: AppColors.mainColor,
+        backgroundColor: AppColors.buttonMainColor,
         child: const Icon(Icons.add),
       ),
     );

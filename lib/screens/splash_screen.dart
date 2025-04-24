@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../routes/routes.dart';
 import '../ui/app_colors.dart';
 
@@ -19,14 +18,13 @@ class SplashScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 32.0,
                 children: [
-                  Column(
-                    children: [
-                      SizedBox(height: 64),
-                      Text(
-                        "App Receitas",
-                        style: TextStyle(color: Colors.white, fontSize: 22.0),
-                      ),
-                    ],
+                  Text(
+                    "App Receitas",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30.0,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   SizedBox(
                     width: double.infinity,
@@ -34,7 +32,7 @@ class SplashScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushReplacementNamed(context, Routes.home);
                       },
-                      child: Text("Entrar"),
+                      child: Text("Entrar", style: TextStyle(fontSize: 18.0)),
                     ),
                   ),
                 ],
