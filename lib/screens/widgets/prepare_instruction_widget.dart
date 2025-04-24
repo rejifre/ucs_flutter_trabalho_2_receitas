@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
-import '../../../models/instruction_model.dart';
-import '../../../ui/app_colors.dart';
+import '../../models/instruction_model.dart';
+import '../../ui/app_colors.dart';
 
 class PrepareInstructionWidget extends StatelessWidget {
   final List<Instruction> steps;

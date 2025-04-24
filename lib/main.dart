@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/routes/routes.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/screens/home_screen.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/screens/recipe_detail_screen.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/screens/splash_screen.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/ui/app_theme.dart';
+import 'routes/routes.dart';
+import 'screens/edit_recipe_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/recipe_detail_screen.dart';
+import 'screens/splash_screen.dart';
+import 'ui/app_theme.dart';
+import 'ui/recipe_screen_type.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'App Receitas',
       initialRoute: Routes.initial,
       navigatorKey: Routes.navigation,
       theme: AppTheme.appTheme,
@@ -24,6 +26,9 @@ class MyApp extends StatelessWidget {
         Routes.initial: (context) => const SplashScreen(),
         Routes.home: (context) => const HomeScreen(),
         Routes.recipe: (context) => const RecipeDetailScreen(),
+        Routes.editRecipe:
+            (context) =>
+                EditRecipeScreen(screenTittle: RecipeScreenType.newRecipe),
       },
     );
   }

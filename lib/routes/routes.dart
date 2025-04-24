@@ -6,5 +6,5 @@ class Routes {
   static const String initial = '/';
   static const String home = '/home';
   static const String recipe = '/recipe';
-  static const String edit = '/edit';
+  static const String editRecipe = '/edit';
 }

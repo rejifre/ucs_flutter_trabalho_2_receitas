@@ -12,7 +12,7 @@ abstract class AppTheme {
           if (states.contains(WidgetState.disabled)) {
             return AppColors.buttonDisabled;
           } else if (states.contains(WidgetState.pressed)) {
-            return AppColors.mainColor;
+            return AppColors.buttonMainDarkColor;
           }
           return AppColors.buttonMainColor;
         }),

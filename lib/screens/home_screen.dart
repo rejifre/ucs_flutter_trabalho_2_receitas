@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:logger/web.dart';
+import 'package:ucs_flutter_trabalho_2_receitas/ui/recipe_screen_type.dart';
+import 'package:uuid/uuid.dart';
 
+import '../models/edit_recipe_screen_arguments_model.dart';
 import '../models/ingredient_model.dart';
 import '../models/instruction_model.dart';
 import '../models/recipe_model.dart';
@@ -68,12 +71,22 @@ class HomeScreen extends StatelessWidget {
     return ingredients;
   }
 
+  Recipe getDefaultRecipe() {
+    return Recipe(
+      id: Uuid().v4(),
+      title: '',
+      description: '',
+      score: 0,
+      date: DateTime.now(),
+      preparationTime: '',
+      ingredients: [],
+      steps: [],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Recipe> recipes = getList();
-
-    var logger = Logger();
-    logger.d(recipes[0]);
 
     return Scaffold(
       appBar: AppBar(title: Text("Receitas")),
@@ -111,7 +124,16 @@ class HomeScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed:
-            () => {Navigator.pushNamed(context, Routes.edit, arguments: {})},
+            () => {
+              Navigator.pushNamed(
+                context,
+                Routes.editRecipe,
+                arguments: EditRecipeScreenArgumentsModel(
+                  RecipeScreenType.editRecipe,
+                  null,
+                ),
+              ),
+            },
         tooltip: 'Adicionar Receita',
         backgroundColor: AppColors.buttonMainColor,
         child: const Icon(Icons.add),
