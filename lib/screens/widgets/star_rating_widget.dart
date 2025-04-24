@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/ui/app_colors.dart';
+import '../../ui/app_colors.dart';
 
 class StarRatingWidget extends StatelessWidget {
   final int starCount = 5; // Default to 5 stars
-  final double starSize = 16;
+  final double starSize = 20;
   final double rating;
 
   const StarRatingWidget({
@@ -42,7 +42,7 @@ class StarRatingWidget extends StatelessWidget {
   }
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(BuildContext context) {
     return Row(
       children: List.generate(
         starCount,

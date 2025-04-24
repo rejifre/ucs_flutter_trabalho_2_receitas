@@ -7,6 +7,14 @@ class Ingredient {
   String quantity;
   Ingredient({required this.id, required this.name, required this.quantity});
 
+  Ingredient copyWith({String? id, String? name, String? quantity}) {
+    return Ingredient(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      quantity: quantity ?? this.quantity,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return <String, dynamic>{'id': id, 'name': name, 'quantity': quantity};
   }
@@ -27,11 +35,13 @@ class Ingredient {
   @override
   String toString() => 'Ingredient(id: $id, name: $name, quantity: $quantity)';
 
-  Ingredient copyWith({String? id, String? name, String? quantity}) {
-    return Ingredient(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      quantity: quantity ?? this.quantity,
-    );
+  @override
+  bool operator ==(covariant Ingredient other) {
+    if (identical(this, other)) return true;
+
+    return other.id == id && other.name == name && other.quantity == quantity;
   }
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode ^ quantity.hashCode;
 }
