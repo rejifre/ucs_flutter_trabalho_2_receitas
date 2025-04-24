@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/models/edit_recipe_screen_arguments_model.dart';
+import '../models/edit_recipe_screen_arguments_model.dart';
 import '../models/recipe_model.dart';
 import '../routes/routes.dart';
 import '../ui/app_colors.dart';
 import '../ui/recipe_screen_type.dart';
-import 'edit_recipe_screen.dart';
 import 'widgets/ingredients_detail_widget.dart';
 import 'widgets/prepare_instruction_widget.dart';
 import 'widgets/star_rating_widget.dart';

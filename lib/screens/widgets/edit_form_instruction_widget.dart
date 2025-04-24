@@ -15,7 +15,9 @@ class EditFormInstructionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      spacing: 10,
       children: [
+        Text(stepOrder.toString()),
         Expanded(
           child: TextFormField(
             controller: descriptionController,

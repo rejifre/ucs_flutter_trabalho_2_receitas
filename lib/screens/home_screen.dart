@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logger/web.dart';
+import 'package:ucs_flutter_trabalho_2_receitas/repositories/recipe_repository.dart';
 import 'package:ucs_flutter_trabalho_2_receitas/ui/recipe_screen_type.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,90 +11,38 @@ import '../models/recipe_model.dart';
 import '../routes/routes.dart';
 import '../ui/app_colors.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  Recipe getRecipe(String id) {
-    return Recipe(
-      id: id,
-      title: 'title $id',
-      description: 'description $id',
-      score: 1,
-      date: DateTime.now(),
-      preparationTime: '10 MIN',
-      ingredients: getIngredients(),
-      steps: getSteps(),
-    );
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Recipe> _recipes = [];
+  RecipeRepository repository = RecipeRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    loadRecipes();
   }
 
-  getList() {
-    List<Recipe> recipes = [];
-
-    for (var i = 0; i < 10; i++) {
-      recipes.add(getRecipe(i.toString()));
-    }
-
-    return recipes;
-  }
-
-  getStep(int id) {
-    return Instruction(
-      id: id.toString(),
-      stepOrder: id,
-      description:
-          "description description descriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescription",
-    );
-  }
-
-  getSteps() {
-    List<Instruction> steps = [];
-
-    for (var i = 0; i < 10; i++) {
-      steps.add(getStep(i));
-    }
-
-    return steps;
-  }
-
-  getIngredients() {
-    List<Ingredient> ingredients = [];
-
-    for (var i = 0; i < 20; i++) {
-      ingredients.add(
-        Ingredient(
-          id: i.toString(),
-          name: 'nome do ingrediente $i',
-          quantity: '1/2',
-        ),
-      );
-    }
-
-    return ingredients;
-  }
-
-  Recipe getDefaultRecipe() {
-    return Recipe(
-      id: Uuid().v4(),
-      title: '',
-      description: '',
-      score: 0,
-      date: DateTime.now(),
-      preparationTime: '',
-      ingredients: [],
-      steps: [],
-    );
+  void loadRecipes() async {
+    var recipes = await repository.getAllRecipes();
+    setState(() {
+      _recipes = recipes;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Recipe> recipes = getList();
-
     return Scaffold(
       appBar: AppBar(title: Text("Receitas")),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 4.0),
         child: ListView.builder(
-          itemCount: recipes.length,
+          itemCount: _recipes.length,
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
@@ -105,17 +54,17 @@ class HomeScreen extends StatelessWidget {
                     style: TextStyle(color: AppColors.lightBackgroundColor),
                   ),
                 ),
-                title: Text(recipes[index].title),
+                title: Text(_recipes[index].title),
                 subtitle: Text(
-                  "${recipes[index].ingredients.length} ingredientes.",
+                  "${_recipes[index].ingredients.length} ingredientes.",
                 ),
                 tileColor: AppColors.lightBackgroundColor,
-                trailing: Text(recipes[index].preparationTime),
+                trailing: Text(_recipes[index].preparationTime),
                 onTap:
                     () => Navigator.pushNamed(
                       context,
                       Routes.recipe,
-                      arguments: recipes[index],
+                      arguments: _recipes[index],
                     ),
               ),
             );

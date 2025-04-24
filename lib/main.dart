@@ -26,9 +26,7 @@ class MyApp extends StatelessWidget {
         Routes.initial: (context) => const SplashScreen(),
         Routes.home: (context) => const HomeScreen(),
         Routes.recipe: (context) => const RecipeDetailScreen(),
-        Routes.editRecipe:
-            (context) =>
-                EditRecipeScreen(screenTittle: RecipeScreenType.newRecipe),
+        Routes.editRecipe: (context) => EditRecipeScreen(),
       },
     );
   }

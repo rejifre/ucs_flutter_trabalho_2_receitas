@@ -1,10 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:logger/web.dart';
+import 'package:ucs_flutter_trabalho_2_receitas/repositories/recipe_repository.dart';
 import 'package:uuid/uuid.dart';
-
 import 'package:ucs_flutter_trabalho_2_receitas/models/recipe_model.dart';
-
 import '../models/edit_recipe_screen_arguments_model.dart';
 import '../models/ingredient_model.dart';
 import '../models/instruction_model.dart';
@@ -14,10 +13,7 @@ import 'widgets/edit_form_ingredient_list_widget.dart';
 import 'widgets/edit_form_instruction_list_widget.dart';
 
 class EditRecipeScreen extends StatefulWidget {
-  final String screenTittle;
-  final Recipe? recipe;
-
-  const EditRecipeScreen({super.key, required this.screenTittle, this.recipe});
+  const EditRecipeScreen({super.key});
 
   @override
   State<EditRecipeScreen> createState() => _EditRecipeScreenState();
@@ -41,14 +37,21 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   List<TextEditingController> stepControllers = [];
 
   late Recipe recipe;
+  var logger = Logger();
+
+  RecipeRepository repository = RecipeRepository();
 
   @override
-  void initState() {
-    super.initState();
-    if (widget.recipe != null) {
-      recipe = widget.recipe!;
-    }
-    recipe = Recipe(
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _scoreController.dispose();
+    _preparationTimeController.dispose();
+    super.dispose();
+  }
+
+  Recipe getDefaultRecipe() {
+    return Recipe(
       id: Uuid().v4(),
       title: '',
       description: '',
@@ -60,16 +63,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _scoreController.dispose();
-    _preparationTimeController.dispose();
-    super.dispose();
-  }
-
-  void _submitForm() {
+  Future<void> _submitForm(bool isEdit) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
@@ -95,17 +89,48 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         ),
       );
 
-      // Agora você pode salvar os ingredientes e instruções com os dados do formulário
-      print("Receita enviada com sucesso!");
-      print("Ingredientes: $ingredients");
-      print("Instruções: $instructions");
+      logger.d(_titleController.text);
+      logger.d(_descriptionController.text);
+      logger.d(_scoreController.text);
+      logger.d(_preparationTimeController.text);
+      logger.d(ingredients);
+      logger.d(instructions);
+
+      var snackBar = SnackBar(
+        content: Text("Receita Salva."),
+        action: SnackBarAction(label: 'Confirmar', onPressed: () {}),
+      );
+
+      final updatedRecipe = Recipe(
+        id: recipe.id,
+        title: _titleController.text,
+        description: _descriptionController.text,
+        score: double.parse(_scoreController.text),
+        preparationTime: _preparationTimeController.text,
+        ingredients: ingredients,
+        steps: instructions,
+        date: DateTime.now(),
+      );
+
+      // TODO - mudar isso.
+      if (isEdit) {
+        await repository.update(updatedRecipe);
+      } else {
+        await repository.insert(updatedRecipe);
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    var logger = Logger();
-    logger.d(recipe);
+    final args =
+        ModalRoute.of(context)!.settings.arguments
+            as EditRecipeScreenArgumentsModel;
+
+    final title = args.screenName;
+    final recipe = args.recipe ?? getDefaultRecipe();
 
     _titleController.text = recipe.title;
     _descriptionController.text = recipe.description;
@@ -114,10 +139,10 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.screenTittle),
+        title: Text(title),
         actions: <Widget>[
           Visibility(
-            visible: widget.screenTittle == RecipeScreenType.editRecipe,
+            visible: title == RecipeScreenType.editRecipe,
             child: TextButton.icon(
               icon: const Icon(Icons.delete),
               label: Text("Excluir"),
@@ -181,7 +206,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 ),
               ),
               ElevatedButton(
-                onPressed: _submitForm,
+                onPressed: () => _submitForm,
                 child: const Text('Salvar Receita'),
               ),
             ],
