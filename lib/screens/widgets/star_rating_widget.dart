@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../ui/app_colors.dart';
 
 class StarRatingWidget extends StatelessWidget {
-  final int starCount = 5; // Default to 5 stars
+  final int starCount = 5;
   final double starSize = 20;
   final double rating;
 

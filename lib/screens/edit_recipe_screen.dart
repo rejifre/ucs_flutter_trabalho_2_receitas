@@ -1,12 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
-import 'package:logger/web.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/repositories/recipe_repository.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/models/recipe_model.dart';
 import '../models/edit_recipe_screen_arguments_model.dart';
 import '../models/ingredient_model.dart';
 import '../models/instruction_model.dart';
+import '../models/recipe_model.dart';
+import '../routes/routes.dart';
+import '../services/recipes_service.dart';
 import '../ui/app_colors.dart';
 import '../ui/recipe_screen_type.dart';
 import 'widgets/edit_form_ingredient_list_widget.dart';
@@ -26,6 +27,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   final GlobalKey<EditFormInstructionListWidgetState> _instructionListKey =
       GlobalKey<EditFormInstructionListWidgetState>();
 
+  final TextEditingController _idController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _scoreController = TextEditingController();
@@ -35,11 +37,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   List<TextEditingController> ingredientNameControllers = [];
   List<TextEditingController> ingredientQuantityControllers = [];
   List<TextEditingController> stepControllers = [];
-
-  late Recipe recipe;
-  var logger = Logger();
-
-  RecipeRepository repository = RecipeRepository();
+  RecipesService service = RecipesService();
 
   @override
   void dispose() {
@@ -52,18 +50,18 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
 
   Recipe getDefaultRecipe() {
     return Recipe(
-      id: Uuid().v4(),
+      id: Uuid().v4().toString(),
       title: '',
       description: '',
       score: 0,
-      date: DateTime.now(),
+      date: DateFormat('dd/MM/yyyy').format(DateTime.now()),
       preparationTime: '',
       ingredients: [],
       steps: [],
     );
   }
 
-  void _confirmDeleteRecipe(String id) {
+  void _confirmDeleteRecipe() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -82,8 +80,13 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
             TextButton(
               child: const Text('Deletar'),
               onPressed: () async {
-                Navigator.of(context).pop(); // Fecha o diálogo
-                await repository.delete(id); // Chama a função de deletar
+                Navigator.popUntil(
+                  context,
+                  ModalRoute.withName(Routes.home),
+                ); // Fecha o diálogo
+                service.deleteRecipe(
+                  _idController.text,
+                ); // Chama a função de deletar
               },
             ),
           ],
@@ -92,7 +95,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     );
   }
 
-  Future<void> _submitForm(bool isEdit) async {
+  Future<void> _submitForm(EditRecipeScreenArgumentsModel args) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
@@ -105,6 +108,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           id: ingredientControllers.ingredientIds[i],
           name: ingredientControllers.ingredientNameControllers[i].text,
           quantity: ingredientControllers.ingredientQuantityControllers[i].text,
+          recipeId: _idController.text,
         ),
       );
 
@@ -115,45 +119,33 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           stepOrder: i + 1,
           description:
               instructionControllers.instructionDescriptionControllers[i].text,
+          recipeId: _idController.text,
         ),
       );
-
-      logger.d(_titleController.text);
-      logger.d(_descriptionController.text);
-      logger.d(_scoreController.text);
-      logger.d(_preparationTimeController.text);
-      logger.d(ingredients);
-      logger.d(instructions);
 
       var snackBar = SnackBar(
         content: Text("Receita Salva."),
-        action: SnackBarAction(
-          label: 'Confirmar',
-          onPressed: () {
-            _confirmDeleteRecipe(recipe.id);
-          },
-        ),
+        action: SnackBarAction(label: 'Confirmar', onPressed: () {}),
       );
 
       final updatedRecipe = Recipe(
-        id: recipe.id,
+        id: _idController.text,
         title: _titleController.text,
         description: _descriptionController.text,
         score: double.parse(_scoreController.text),
         preparationTime: _preparationTimeController.text,
         ingredients: ingredients,
         steps: instructions,
-        date: DateTime.now(),
+        date: DateFormat('dd/MM/yyyy').format(DateTime.now()),
       );
 
-      // TODO - mudar isso.
-      if (isEdit) {
-        await repository.update(updatedRecipe);
-      } else {
-        await repository.insert(updatedRecipe);
-      }
+      var sm = ScaffoldMessenger.of(context);
+      await service.saveRecipe(updatedRecipe);
 
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      setState(() {
+        args.recipe = updatedRecipe;
+      });
+      sm.showSnackBar(snackBar);
     }
   }
 
@@ -164,8 +156,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
             as EditRecipeScreenArgumentsModel;
 
     final title = args.screenName;
-    final recipe = args.recipe ?? getDefaultRecipe();
 
+    final recipe = args.recipe ?? getDefaultRecipe();
+    _idController.text = recipe.id;
     _titleController.text = recipe.title;
     _descriptionController.text = recipe.description;
     _scoreController.text = recipe.score.toString();
@@ -181,71 +174,70 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
               icon: const Icon(Icons.delete),
               label: Text("Excluir"),
               style: TextButton.styleFrom(foregroundColor: AppColors.delete),
-              onPressed: () {},
+              onPressed: _confirmDeleteRecipe,
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: [
-                TextFormField(
-                  controller: _titleController,
-                  decoration: InputDecoration(labelText: 'Nome'),
-                  validator:
-                      (val) =>
-                          val == null || val.isEmpty
-                              ? 'Por favor preencha o nome.'
-                              : null,
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              Text(args.recipe!.title),
+              TextFormField(
+                controller: _titleController,
+                decoration: InputDecoration(labelText: 'Nome'),
+                validator:
+                    (val) =>
+                        val == null || val.isEmpty
+                            ? 'Por favor preencha o nome.'
+                            : null,
+              ),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: InputDecoration(labelText: 'Descrição'),
+              ),
+              TextFormField(
+                controller: _scoreController,
+                decoration: InputDecoration(labelText: 'Nota de 0 a 5'),
+                keyboardType: TextInputType.number,
+                validator:
+                    (val) =>
+                        val == null || val.isEmpty
+                            ? 'Por favor preencha a nota.'
+                            : null,
+              ),
+              TextFormField(
+                controller: _preparationTimeController,
+                decoration: InputDecoration(labelText: 'Tempo de Preparo'),
+                validator:
+                    (val) =>
+                        val == null || val.isEmpty
+                            ? 'Por favor preencha o tempo de preparo.'
+                            : null,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
+                child: EditFormIngredientListWidget(
+                  key: _ingredientListKey,
+                  initialIngredients: recipe.ingredients,
                 ),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(labelText: 'Descrição'),
+              ),
+              Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
+                child: EditFormInstructionListWidget(
+                  key: _instructionListKey,
+                  initialInstructions: recipe.steps,
                 ),
-                TextFormField(
-                  controller: _scoreController,
-                  decoration: InputDecoration(labelText: 'Nota de 0 a 5'),
-                  keyboardType: TextInputType.number,
-                  validator:
-                      (val) =>
-                          val == null || val.isEmpty
-                              ? 'Por favor preencha a nota.'
-                              : null,
-                ),
-                TextFormField(
-                  controller: _preparationTimeController,
-                  decoration: InputDecoration(labelText: 'Tempo de Preparo'),
-                  validator:
-                      (val) =>
-                          val == null || val.isEmpty
-                              ? 'Por favor preencha o tempo de preparo.'
-                              : null,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 15.0),
-                  child: EditFormIngredientListWidget(
-                    key: _ingredientListKey,
-                    initialIngredients: [],
-                  ),
-                ),
-                Divider(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 15.0),
-                  child: EditFormInstructionListWidget(
-                    key: _instructionListKey,
-                    initialInstructions: [],
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () => _submitForm,
-                  child: const Text('Salvar Receita'),
-                ),
-              ],
-            ),
+              ),
+              ElevatedButton(
+                onPressed: () => _submitForm(args),
+                child: const Text('Salvar Receita'),
+              ),
+            ],
           ),
         ),
       ),

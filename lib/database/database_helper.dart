@@ -5,62 +5,70 @@ import 'sqls/instruction_sql.dart';
 import 'sqls/recipe_sql.dart';
 
 class DatabaseHelper {
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  factory DatabaseHelper() => _instance;
+  DatabaseHelper._internal();
+
+  static Database? _database;
+
   static final String _databaseName = "meubanco.db";
   static final int _databaseVersion = 1;
-  static late Database _database;
 
-  init() async {
+  // Acesso seguro à instância do banco
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _init();
+    return _database!;
+  }
+
+  Future<Database> _init() async {
     String pathDB = join(await getDatabasesPath(), _databaseName);
-    _database = await openDatabase(
+    final db = await openDatabase(
       pathDB,
       version: _databaseVersion,
       onCreate: createDB,
       onUpgrade: updateDB,
     );
+    return db;
   }
 
   Future updateDB(Database db, int oldVersion, int newVersion) async {
     if (newVersion == 2) {}
   }
 
-  Future createDB(Database db, int versao) async {
-    db.execute(IngredientSql.createIngredientTable());
-    db.execute(InstructionSql.createInstructionTable());
-    db.execute(RecipeSql.criateRecipeTable());
+  Future createDB(Database db, int version) async {
+    await db.execute(RecipeSql.createRecipeTable());
+    await db.execute(IngredientSql.createIngredientTable());
+    await db.execute(InstructionSql.createInstructionTable());
   }
 
-  // Método de transação para manipulação de dados
-  Future<void> performTransaction(
-    Future<void> Function(Transaction txn) action,
-  ) async {
-    await init();
-    await _database.transaction((txn) async {
-      await action(txn); // Aqui, a ação personalizada é chamada
-    });
-  }
-
-  /// insert data in db
-  /// @param table: the name of the table to be insert
-  /// @param data: data map to be added
   Future<int> insert(String table, Map<String, Object?> data) async {
-    await init();
-    return await _database.insert(table, data);
+    final db = await database;
+    return await db.insert(table, data);
   }
 
-  /// update data in db
-  /// @param table: the name of the table to be updated
-  /// @param data: data map to be updated
-  Future<int> update(String table, Map<String, Object?> data) async {
-    await init();
-    return await _database.update(table, data);
+  Future<int> update(
+    String table,
+    Map<String, dynamic> data,
+    String? condition,
+    List<dynamic>? conditionArgs,
+  ) async {
+    final db = await database;
+    return await db.update(
+      table,
+      data,
+      where: condition,
+      whereArgs: conditionArgs,
+    );
   }
 
-  /// delete data to db
-  /// @param table: the name of the table to delete from
-  /// @param id: product id to be deleted
-  Future<int> delete(String table, String id) async {
-    await init();
-    return await _database.delete(table, where: 'id = ?', whereArgs: [id]);
+  Future<int> delete(
+    String table,
+    String condition,
+    List<Object> conditionArgs,
+  ) async {
+    final db = await database;
+    return await db.delete(table, where: condition, whereArgs: conditionArgs);
   }
 
   Future<List<Map<String, Object?>>> getAll(
@@ -69,11 +77,16 @@ class DatabaseHelper {
     List<Object>? conditionArgs,
     String? orderBy,
   }) async {
-    await init();
-    return await _database.query(
-      table,
-      where: condition,
-      whereArgs: conditionArgs,
-    );
+    final db = await database;
+    return await db.query(table, where: condition, whereArgs: conditionArgs);
+  }
+
+  Future<Map<String, Object?>?> getById(String table, id) async {
+    final db = await database;
+    final result = await db.query(table, where: 'id = ?', whereArgs: [id]);
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+    return null;
   }
 }

@@ -5,17 +5,26 @@ class Instruction {
   String id;
   int stepOrder;
   String description;
+  String recipeId;
+
   Instruction({
     required this.id,
     required this.stepOrder,
     required this.description,
+    required this.recipeId,
   });
 
-  Instruction copyWith({String? id, int? stepOrder, String? description}) {
+  Instruction copyWith({
+    String? id,
+    int? stepOrder,
+    String? description,
+    String? recipeId,
+  }) {
     return Instruction(
       id: id ?? this.id,
       stepOrder: stepOrder ?? this.stepOrder,
       description: description ?? this.description,
+      recipeId: recipeId ?? this.recipeId,
     );
   }
 
@@ -24,6 +33,7 @@ class Instruction {
       'id': id,
       'step_order': stepOrder,
       'description': description,
+      'recipe_id': recipeId,
     };
   }
 
@@ -32,6 +42,7 @@ class Instruction {
       id: map['id'] as String,
       stepOrder: map['step_order'] as int,
       description: map['description'] as String,
+      recipeId: map['recipe_id'] as String,
     );
   }
 
@@ -41,8 +52,9 @@ class Instruction {
       Instruction.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>
-      'Instruction(id: $id, step_order: $stepOrder, description: $description)';
+  String toString() {
+    return 'Instruction(id: $id, step_order: $stepOrder, description: $description, recipe_Id: $recipeId)';
+  }
 
   @override
   bool operator ==(covariant Instruction other) {
@@ -50,9 +62,15 @@ class Instruction {
 
     return other.id == id &&
         other.stepOrder == stepOrder &&
-        other.description == description;
+        other.description == description &&
+        other.recipeId == recipeId;
   }
 
   @override
-  int get hashCode => id.hashCode ^ stepOrder.hashCode ^ description.hashCode;
+  int get hashCode {
+    return id.hashCode ^
+        stepOrder.hashCode ^
+        description.hashCode ^
+        recipeId.hashCode;
+  }
 }

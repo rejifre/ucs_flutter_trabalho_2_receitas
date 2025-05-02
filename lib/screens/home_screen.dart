@@ -1,11 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/repositories/recipe_repository.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/ui/recipe_screen_type.dart';
-
+import 'package:logger/logger.dart';
 import '../models/edit_recipe_screen_arguments_model.dart';
 import '../models/recipe_model.dart';
 import '../routes/routes.dart';
+import '../services/recipes_service.dart';
 import '../ui/app_colors.dart';
+import '../ui/recipe_screen_type.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Recipe> _recipes = [];
-  RecipeRepository repository = RecipeRepository();
+  RecipesService service = RecipesService();
 
   @override
   void initState() {
@@ -24,11 +25,29 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadRecipes();
   }
 
-  void _loadRecipes() async {
-    var recipes = await repository.getAllRecipes();
+  Future<void> _loadRecipes() async {
+    final recipes = await service.getAllRecipes();
     setState(() {
       _recipes = recipes;
     });
+  }
+
+  void _navigateToAdd() async {
+    await Navigator.pushNamed(
+      context,
+      Routes.editRecipe,
+      arguments: EditRecipeScreenArgumentsModel(
+        RecipeScreenType.newRecipe,
+        null,
+      ),
+    );
+
+    await _loadRecipes();
+  }
+
+  void _navigateToDetail(Recipe recipe) async {
+    await Navigator.pushNamed(context, Routes.recipe, arguments: recipe);
+    await _loadRecipes();
   }
 
   @override
@@ -55,30 +74,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   "${_recipes[index].ingredients.length} ingredientes.",
                 ),
                 tileColor: AppColors.lightBackgroundColor,
-                trailing: Text(_recipes[index].preparationTime),
-                onTap:
-                    () => Navigator.pushNamed(
-                      context,
-                      Routes.recipe,
-                      arguments: _recipes[index],
-                    ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 5,
+                  children: [
+                    Icon(Icons.timer_sharp, size: 15),
+                    Text(_recipes[index].preparationTime),
+                  ],
+                ),
+                onTap: () => _navigateToDetail(_recipes[index]),
               ),
             );
           },
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed:
-            () => {
-              Navigator.pushNamed(
-                context,
-                Routes.editRecipe,
-                arguments: EditRecipeScreenArgumentsModel(
-                  RecipeScreenType.editRecipe,
-                  null,
-                ),
-              ),
-            },
+        onPressed: _navigateToAdd,
         tooltip: 'Adicionar Receita',
         backgroundColor: AppColors.buttonMainColor,
         child: const Icon(Icons.add),

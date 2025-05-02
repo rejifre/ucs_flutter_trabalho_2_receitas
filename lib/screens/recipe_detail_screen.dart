@@ -2,18 +2,26 @@ import 'package:flutter/material.dart';
 import '../models/edit_recipe_screen_arguments_model.dart';
 import '../models/recipe_model.dart';
 import '../routes/routes.dart';
+import '../services/recipes_service.dart';
 import '../ui/app_colors.dart';
 import '../ui/recipe_screen_type.dart';
 import 'widgets/ingredients_detail_widget.dart';
 import 'widgets/prepare_instruction_widget.dart';
 import 'widgets/star_rating_widget.dart';
 
-class RecipeDetailScreen extends StatelessWidget {
+class RecipeDetailScreen extends StatefulWidget {
   const RecipeDetailScreen({super.key});
 
   @override
+  State<RecipeDetailScreen> createState() => _RecipeDetailScreenState();
+}
+
+class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
+  RecipesService service = RecipesService();
+
+  @override
   Widget build(BuildContext context) {
-    final recipe = ModalRoute.of(context)!.settings.arguments as Recipe;
+    var recipe = ModalRoute.of(context)!.settings.arguments as Recipe;
 
     return Scaffold(
       appBar: AppBar(
@@ -24,8 +32,8 @@ class RecipeDetailScreen extends StatelessWidget {
             style: TextButton.styleFrom(
               foregroundColor: AppColors.buttonMainColor,
             ),
-            onPressed: () {
-              Navigator.pushNamed(
+            onPressed: () async {
+              var res = await Navigator.pushNamed(
                 context,
                 Routes.editRecipe,
                 arguments: EditRecipeScreenArgumentsModel(
@@ -33,6 +41,10 @@ class RecipeDetailScreen extends StatelessWidget {
                   recipe,
                 ),
               );
+              var reci = await service.getRecipeById(recipe.id) as Recipe;
+              setState(() {
+                recipe = reci;
+              });
             },
           ),
         ],
@@ -54,9 +66,7 @@ class RecipeDetailScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     StarRatingWidget(rating: recipe.score),
-                    Text(
-                      "${recipe.date.day} / ${recipe.date.month} / ${recipe.date.year}",
-                    ),
+                    Text(recipe.date),
                   ],
                 ),
               ),

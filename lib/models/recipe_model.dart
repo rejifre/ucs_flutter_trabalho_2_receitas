@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'ingredient_model.dart';
 import 'instruction_model.dart';
 
@@ -8,10 +9,10 @@ class Recipe {
   String title;
   String description;
   double score;
-  DateTime date;
+  String date;
   String preparationTime;
-  List<Ingredient> ingredients = [];
-  List<Instruction> steps = [];
+  List<Ingredient> ingredients;
+  List<Instruction> steps;
   Recipe({
     required this.id,
     required this.title,
@@ -19,9 +20,31 @@ class Recipe {
     required this.score,
     required this.date,
     required this.preparationTime,
-    required this.ingredients,
-    required this.steps,
+    this.ingredients = const [],
+    this.steps = const [],
   });
+
+  Recipe copyWith({
+    String? id,
+    String? title,
+    String? description,
+    double? score,
+    String? date,
+    String? preparationTime,
+    List<Ingredient>? ingredients,
+    List<Instruction>? steps,
+  }) {
+    return Recipe(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      score: score ?? this.score,
+      date: date ?? this.date,
+      preparationTime: preparationTime ?? this.preparationTime,
+      ingredients: ingredients ?? this.ingredients,
+      steps: steps ?? this.steps,
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -29,7 +52,7 @@ class Recipe {
       'title': title,
       'description': description,
       'score': score,
-      'date': date.millisecondsSinceEpoch,
+      'date': date,
       'preparationTime': preparationTime,
     };
   }
@@ -40,18 +63,8 @@ class Recipe {
       title: map['title'] as String,
       description: map['description'] as String,
       score: map['score'] as double,
-      date: DateTime.fromMillisecondsSinceEpoch(map['date'] as int),
+      date: map['date'] as String,
       preparationTime: map['preparationTime'] as String,
-      ingredients: List<Ingredient>.from(
-        (map['ingredients'] as List<int>).map<Ingredient>(
-          (x) => Ingredient.fromMap(x as Map<String, dynamic>),
-        ),
-      ),
-      steps: List<Instruction>.from(
-        (map['steps'] as List<int>).map<Instruction>(
-          (x) => Instruction.fromMap(x as Map<String, dynamic>),
-        ),
-      ),
     );
   }
 
@@ -63,5 +76,31 @@ class Recipe {
   @override
   String toString() {
     return 'Recipe(id: $id, title: $title, description: $description, score: $score, date: $date, preparationTime: $preparationTime, ingredients: $ingredients, steps: $steps)';
+  }
+
+  @override
+  bool operator ==(covariant Recipe other) {
+    if (identical(this, other)) return true;
+
+    return other.id == id &&
+        other.title == title &&
+        other.description == description &&
+        other.score == score &&
+        other.date == date &&
+        other.preparationTime == preparationTime &&
+        listEquals(other.ingredients, ingredients) &&
+        listEquals(other.steps, steps);
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^
+        title.hashCode ^
+        description.hashCode ^
+        score.hashCode ^
+        date.hashCode ^
+        preparationTime.hashCode ^
+        ingredients.hashCode ^
+        steps.hashCode;
   }
 }
