@@ -5,12 +5,7 @@ import 'sqls/instruction_sql.dart';
 import 'sqls/recipe_sql.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper _instance = DatabaseHelper._internal();
-  factory DatabaseHelper() => _instance;
-  DatabaseHelper._internal();
-
   static Database? _database;
-
   static final String _databaseName = "meubanco.db";
   static final int _databaseVersion = 1;
 
