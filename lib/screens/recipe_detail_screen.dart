@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/recipe_model.dart';
 import '../providers/recipes_provider.dart';
 import '../routes/routes.dart';
 import '../ui/app_colors.dart';
@@ -14,7 +15,20 @@ class RecipeDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final recipeId = ModalRoute.of(context)!.settings.arguments as String;
     final provider = Provider.of<RecipesProvider>(context);
-    final recipe = provider.recipes.firstWhere((r) => r.id == recipeId);
+    final recipe = provider.recipes.firstWhere(
+      (r) => r.id == recipeId,
+      orElse:
+          () => Recipe(
+            id: '',
+            title: 'Unknown',
+            description: 'No description available',
+            preparationTime: '0 min',
+            ingredients: [],
+            steps: [],
+            score: 0,
+            date: 'N/A',
+          ),
+    );
 
     return Scaffold(
       appBar: AppBar(

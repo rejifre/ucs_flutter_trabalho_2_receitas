@@ -37,14 +37,8 @@ class RecipesService {
 
   Future<void> updateRecipe(Recipe recipe) async {
     await _recipeRepo.update(recipe);
-
-    if (recipe.ingredients.isNotEmpty) {
-      await _ingredientRepo.update(recipe.id, recipe.ingredients);
-    }
-
-    if (recipe.steps.isNotEmpty) {
-      await _instructionRepo.update(recipe.id, recipe.steps);
-    }
+    await _ingredientRepo.update(recipe.id, recipe.ingredients);
+    await _instructionRepo.update(recipe.id, recipe.steps);
 
     logger.i('update recipe');
   }
