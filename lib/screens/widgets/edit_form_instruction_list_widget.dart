@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ucs_flutter_trabalho_2_receitas/ui/app_colors.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/instruction_model.dart';
+import '../../ui/app_colors.dart';
 import 'edit_form_instruction_widget.dart';
 
 class EditFormInstructionListWidget extends StatefulWidget {
