@@ -16,12 +16,6 @@ class RecipeDetailScreen extends StatelessWidget {
     final provider = Provider.of<RecipesProvider>(context);
     final recipe = provider.recipes.firstWhere((r) => r.id == recipeId);
 
-    if (recipe == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text("Receita não encontrada")),
-        body: Center(child: Text("Receita não encontrada")),
-      );
-    }
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -57,7 +51,7 @@ class RecipeDetailScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    StarRatingWidget(rating: recipe!.score),
+                    StarRatingWidget(rating: recipe.score),
                     Text(recipe.date),
                   ],
                 ),
@@ -67,7 +61,7 @@ class RecipeDetailScreen extends StatelessWidget {
                 margin: EdgeInsets.symmetric(vertical: 10.0),
                 color: AppColors.lightBackgroundColor,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -92,6 +86,19 @@ class RecipeDetailScreen extends StatelessWidget {
                           children: [
                             Text('INGR:'),
                             Text(recipe.ingredients.length.toString()),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      spacing: 8.0,
+                      children: [
+                        Icon(Icons.breakfast_dining_outlined),
+                        Column(
+                          children: [
+                            Text('PASSOS:'),
+                            Text(recipe.steps.length.toString()),
                           ],
                         ),
                       ],

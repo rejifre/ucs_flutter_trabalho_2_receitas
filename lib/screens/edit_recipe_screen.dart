@@ -35,6 +35,26 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       TextEditingController();
 
   final _uuid = const Uuid();
+  String? _currentDate;
+  Recipe? _currentRecipe;
+  bool _isInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _currentRecipe = ModalRoute.of(context)?.settings.arguments as Recipe?;
+      _idController.text = _currentRecipe?.id ?? _uuid.v4().toString();
+      _titleController.text = _currentRecipe?.title ?? '';
+      _descriptionController.text = _currentRecipe?.description ?? '';
+      _scoreController.text = _currentRecipe?.score.toString() ?? '';
+      _preparationTimeController.text =
+          _currentRecipe?.preparationTime ?? '0h 0m';
+      _currentDate = _currentRecipe?.date ?? _getData();
+
+      _isInitialized = true;
+    }
+  }
 
   @override
   void dispose() {
@@ -44,6 +64,11 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     _scoreController.dispose();
     _preparationTimeController.dispose();
     super.dispose();
+  }
+
+  String _getData() {
+    final now = DateTime.now();
+    return DateFormat('dd/MM/yyyy kk:mm').format(now.toUtc());
   }
 
   void _confirmDeleteRecipe() {
@@ -116,9 +141,13 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         preparationTime: _preparationTimeController.text,
         ingredients: ingredients,
         steps: instructions,
-        date: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+        date: _getData(),
       );
       final sm = ScaffoldMessenger.of(context);
+
+      setState(() {
+        _currentDate = updatedRecipe.date;
+      });
       provider.addOrUpdateRecipe(updatedRecipe);
 
       sm.showSnackBar(
@@ -132,16 +161,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Recipe? currentRecipe =
-        ModalRoute.of(context)?.settings.arguments as Recipe?;
-    final isEditing = currentRecipe != null && currentRecipe.title.isNotEmpty;
-
-    _idController.text = currentRecipe?.id ?? _uuid.v4().toString();
-    _titleController.text = currentRecipe?.title ?? '';
-    _descriptionController.text = currentRecipe?.description ?? '';
-    _scoreController.text = currentRecipe?.score.toString() ?? '';
-    _preparationTimeController.text = currentRecipe?.preparationTime ?? '0h 0m';
-    final currentDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
+    final isEditing =
+        _currentRecipe != null && _currentRecipe!.title.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -168,7 +189,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
             children: [
               Text(
                 textAlign: TextAlign.end,
-                'Data: $currentDate',
+                'Data: $_currentDate',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -210,7 +231,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 15.0),
                 child: EditFormIngredientListWidget(
                   key: _ingredientListKey,
-                  initialIngredients: currentRecipe!.ingredients,
+                  initialIngredients: _currentRecipe?.ingredients ?? [],
                 ),
               ),
               Divider(),
@@ -218,7 +239,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 15.0),
                 child: EditFormInstructionListWidget(
                   key: _instructionListKey,
-                  initialInstructions: currentRecipe!.steps,
+                  initialInstructions: _currentRecipe?.steps ?? [],
                 ),
               ),
               ElevatedButton(
