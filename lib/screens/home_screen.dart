@@ -1,12 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
-import '../models/edit_recipe_screen_arguments_model.dart';
+import 'package:provider/provider.dart';
 import '../models/recipe_model.dart';
 import '../routes/routes.dart';
-import '../services/recipes_service.dart';
+import '../providers/recipes_provider.dart';
 import '../ui/app_colors.dart';
-import '../ui/recipe_screen_type.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,41 +14,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Recipe> _recipes = [];
-  RecipesService service = RecipesService();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadRecipes();
-  }
-
-  Future<void> _loadRecipes() async {
-    final recipes = await service.getAllRecipes();
-    setState(() {
-      _recipes = recipes;
-    });
-  }
 
   void _navigateToAdd() async {
-    await Navigator.pushNamed(
-      context,
-      Routes.editRecipe,
-      arguments: EditRecipeScreenArgumentsModel(
-        RecipeScreenType.newRecipe,
-        null,
-      ),
-    );
-
-    await _loadRecipes();
+    await Navigator.pushNamed(context, Routes.editRecipe, arguments: null);
   }
 
-  void _navigateToDetail(Recipe recipe) async {
-    await Navigator.pushNamed(context, Routes.recipe, arguments: recipe);
-    await _loadRecipes();
+  void _navigateToDetail(String recipeId) async {
+    await Navigator.pushNamed(context, Routes.recipe, arguments: recipeId);
   }
 
   @override
   Widget build(BuildContext context) {
+    final recipeProvider = Provider.of<RecipesProvider>(context);
+    _recipes = recipeProvider.recipes;
+
     return Scaffold(
       appBar: AppBar(title: Text("Receitas")),
       body: Padding(
@@ -82,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(_recipes[index].preparationTime),
                   ],
                 ),
-                onTap: () => _navigateToDetail(_recipes[index]),
+                onTap: () => _navigateToDetail(_recipes[index].id),
               ),
             );
           },

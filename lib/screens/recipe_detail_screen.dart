@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
-import '../models/edit_recipe_screen_arguments_model.dart';
-import '../models/recipe_model.dart';
+import 'package:provider/provider.dart';
+import '../providers/recipes_provider.dart';
 import '../routes/routes.dart';
-import '../services/recipes_service.dart';
 import '../ui/app_colors.dart';
-import '../ui/recipe_screen_type.dart';
 import 'widgets/ingredients_detail_widget.dart';
 import 'widgets/prepare_instruction_widget.dart';
 import 'widgets/star_rating_widget.dart';
 
-class RecipeDetailScreen extends StatefulWidget {
+class RecipeDetailScreen extends StatelessWidget {
   const RecipeDetailScreen({super.key});
 
   @override
-  State<RecipeDetailScreen> createState() => _RecipeDetailScreenState();
-}
-
-class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
-  RecipesService service = RecipesService();
-
-  @override
   Widget build(BuildContext context) {
-    var recipe = ModalRoute.of(context)!.settings.arguments as Recipe;
+    final recipeId = ModalRoute.of(context)!.settings.arguments as String;
+    final provider = Provider.of<RecipesProvider>(context);
+    final recipe = provider.recipes.firstWhere((r) => r.id == recipeId);
 
+    if (recipe == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text("Receita não encontrada")),
+        body: Center(child: Text("Receita não encontrada")),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -33,18 +32,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               foregroundColor: AppColors.buttonMainColor,
             ),
             onPressed: () async {
-              var res = await Navigator.pushNamed(
+              await Navigator.pushNamed(
                 context,
                 Routes.editRecipe,
-                arguments: EditRecipeScreenArgumentsModel(
-                  RecipeScreenType.editRecipe,
-                  recipe,
-                ),
+                arguments: recipe,
               );
-              var reci = await service.getRecipeById(recipe.id) as Recipe;
-              setState(() {
-                recipe = reci;
-              });
             },
           ),
         ],
@@ -56,7 +48,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                recipe.title,
+                recipe!.title,
                 style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
               ),
               Padding(
@@ -65,7 +57,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    StarRatingWidget(rating: recipe.score),
+                    StarRatingWidget(rating: recipe!.score),
                     Text(recipe.date),
                   ],
                 ),
@@ -114,7 +106,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   style: TextStyle(fontSize: 26.0, fontWeight: FontWeight.bold),
                 ),
               ),
-              Text(recipe.description, style: TextStyle(fontSize: 16.0)),
+              Text(recipe!.description, style: TextStyle(fontSize: 16.0)),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 10.0),
                 child: Text(
@@ -122,7 +114,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   style: TextStyle(fontSize: 26.0, fontWeight: FontWeight.bold),
                 ),
               ),
-              IngredientsDetailWidget(ingredients: recipe.ingredients),
+              IngredientsDetailWidget(ingredients: recipe!.ingredients),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 10.0),
                 child: Text(

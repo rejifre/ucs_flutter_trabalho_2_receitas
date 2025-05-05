@@ -1,13 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import '../models/edit_recipe_screen_arguments_model.dart';
 import '../models/ingredient_model.dart';
 import '../models/instruction_model.dart';
 import '../models/recipe_model.dart';
+import '../providers/recipes_provider.dart';
 import '../routes/routes.dart';
-import '../services/recipes_service.dart';
 import '../ui/app_colors.dart';
 import '../ui/recipe_screen_type.dart';
 import 'widgets/edit_form_ingredient_list_widget.dart';
@@ -34,31 +34,16 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   final TextEditingController _preparationTimeController =
       TextEditingController();
 
-  List<TextEditingController> ingredientNameControllers = [];
-  List<TextEditingController> ingredientQuantityControllers = [];
-  List<TextEditingController> stepControllers = [];
-  RecipesService service = RecipesService();
+  final _uuid = const Uuid();
 
   @override
   void dispose() {
+    _idController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
     _scoreController.dispose();
     _preparationTimeController.dispose();
     super.dispose();
-  }
-
-  Recipe getDefaultRecipe() {
-    return Recipe(
-      id: Uuid().v4().toString(),
-      title: '',
-      description: '',
-      score: 0,
-      date: DateFormat('dd/MM/yyyy').format(DateTime.now()),
-      preparationTime: '',
-      ingredients: [],
-      steps: [],
-    );
   }
 
   void _confirmDeleteRecipe() {
@@ -74,19 +59,18 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
             TextButton(
               child: const Text('Cancelar'),
               onPressed: () {
-                Navigator.of(context).pop(); // Fecha o diálogo
+                Navigator.of(context).pop();
               },
             ),
             TextButton(
               child: const Text('Deletar'),
               onPressed: () async {
-                Navigator.popUntil(
+                final provider = Provider.of<RecipesProvider>(
                   context,
-                  ModalRoute.withName(Routes.home),
-                ); // Fecha o diálogo
-                service.deleteRecipe(
-                  _idController.text,
-                ); // Chama a função de deletar
+                  listen: false,
+                );
+                Navigator.popUntil(context, ModalRoute.withName(Routes.home));
+                await provider.deleteRecipe(_idController.text);
               },
             ),
           ],
@@ -95,8 +79,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     );
   }
 
-  Future<void> _submitForm(EditRecipeScreenArgumentsModel args) async {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      final provider = Provider.of<RecipesProvider>(context, listen: false);
       _formKey.currentState!.save();
 
       final ingredientControllers = _ingredientListKey.currentState!;
@@ -123,11 +108,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         ),
       );
 
-      var snackBar = SnackBar(
-        content: Text("Receita Salva."),
-        action: SnackBarAction(label: 'Confirmar', onPressed: () {}),
-      );
-
       final updatedRecipe = Recipe(
         id: _idController.text,
         title: _titleController.text,
@@ -138,38 +118,39 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         steps: instructions,
         date: DateFormat('dd/MM/yyyy').format(DateTime.now()),
       );
+      final sm = ScaffoldMessenger.of(context);
+      provider.addOrUpdateRecipe(updatedRecipe);
 
-      var sm = ScaffoldMessenger.of(context);
-      await service.saveRecipe(updatedRecipe);
-
-      setState(() {
-        args.recipe = updatedRecipe;
-      });
-      sm.showSnackBar(snackBar);
+      sm.showSnackBar(
+        const SnackBar(
+          content: Text("Receita Salva."),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments
-            as EditRecipeScreenArgumentsModel;
+    final Recipe? currentRecipe =
+        ModalRoute.of(context)?.settings.arguments as Recipe?;
+    final isEditing = currentRecipe != null && currentRecipe.title.isNotEmpty;
 
-    final title = args.screenName;
-
-    final recipe = args.recipe ?? getDefaultRecipe();
-    _idController.text = recipe.id;
-    _titleController.text = recipe.title;
-    _descriptionController.text = recipe.description;
-    _scoreController.text = recipe.score.toString();
-    _preparationTimeController.text = recipe.preparationTime;
+    _idController.text = currentRecipe?.id ?? _uuid.v4().toString();
+    _titleController.text = currentRecipe?.title ?? '';
+    _descriptionController.text = currentRecipe?.description ?? '';
+    _scoreController.text = currentRecipe?.score.toString() ?? '';
+    _preparationTimeController.text = currentRecipe?.preparationTime ?? '0h 0m';
+    final currentDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(
+          isEditing ? RecipeScreenType.editRecipe : RecipeScreenType.newRecipe,
+        ),
         actions: <Widget>[
           Visibility(
-            visible: title == RecipeScreenType.editRecipe,
+            visible: isEditing,
             child: TextButton.icon(
               icon: const Icon(Icons.delete),
               label: Text("Excluir"),
@@ -185,7 +166,14 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              Text(args.recipe!.title),
+              Text(
+                textAlign: TextAlign.end,
+                'Data: $currentDate',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(labelText: 'Nome'),
@@ -222,7 +210,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 15.0),
                 child: EditFormIngredientListWidget(
                   key: _ingredientListKey,
-                  initialIngredients: recipe.ingredients,
+                  initialIngredients: currentRecipe!.ingredients,
                 ),
               ),
               Divider(),
@@ -230,11 +218,11 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 15.0),
                 child: EditFormInstructionListWidget(
                   key: _instructionListKey,
-                  initialInstructions: recipe.steps,
+                  initialInstructions: currentRecipe!.steps,
                 ),
               ),
               ElevatedButton(
-                onPressed: () => _submitForm(args),
+                onPressed: _submitForm,
                 child: const Text('Salvar Receita'),
               ),
             ],
